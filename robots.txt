@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://santuariowinston.com/sitemap.xml
