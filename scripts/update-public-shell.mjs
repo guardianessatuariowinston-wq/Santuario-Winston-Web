@@ -7,7 +7,8 @@ const pages = fs.readdirSync(root).filter(name => name.endsWith('.html') && name
 const activeFor = (name) => {
   if (name === 'index.html') return 'inicio';
   if (['habitantes.html','guardianes.html','sobre-nosotros.html','transparencia.html'].includes(name)) return 'descubre';
-  if (['como-ayudar.html','hazte-socio.html','apadrina.html','teaming.html','donar.html','adopciones-solidarias.html','en-busca-del-paraiso.html'].includes(name)) return 'ayudar';
+  if (name === 'apadrina.html') return 'padrinos';
+  if (['como-ayudar.html','hazte-socio.html','teaming.html','donar.html','adopciones-solidarias.html','en-busca-del-paraiso.html'].includes(name)) return 'ayudar';
   if (['voluntariado.html','testimonios.html','voluntariado-habitual.html','larga-estancia.html'].includes(name)) return 'voluntariado';
   if (name === 'actividades.html') return 'actividades';
   if (name === 'tienda.html') return 'tienda';

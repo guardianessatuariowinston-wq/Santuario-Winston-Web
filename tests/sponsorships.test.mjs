@@ -68,3 +68,17 @@ test('public sponsorship page is prepared for real flow without fake checkout', 
   assert.match(html, /apadrinamiento mensual/i);
   assert.ok(!/sk_live_|STRIPE_SECRET_KEY|service_role/i.test(html));
 });
+
+test('padrinos is a prominent public area for client review', () => {
+  const shell = read('scripts/public-shell.mjs');
+  assert.ok(shell.includes("activeClass(active,'padrinos')"), 'desktop top-level Padrinos nav');
+  assert.match(shell, /drawer-group[^\n]*apadrina\.html[^\n]*>Padrinos</, 'mobile top-level Padrinos nav');
+
+  const home = read('index.html');
+  assert.ok(home.includes('data-home-padrinos'), 'home sponsorship feature block');
+  assert.match(home, /Conviértete en padrino/i);
+  assert.match(home, /Conocer a quién puedo apadrinar/i);
+
+  const builder = read('scripts/build-habitantes.mjs');
+  assert.ok(builder.includes('Apadrina a ${escapeHtml(record.name)}'), 'resident CTA names the animal');
+});
