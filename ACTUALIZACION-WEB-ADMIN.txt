@@ -1,0 +1,34 @@
+SANTUARIO WINSTON — ACTUALIZACIÓN CONSOLIDADA WEB ADMIN
+Fecha: 03/09/2026
+
+INCLUYE
+- Nueva zona privada: administracion.html
+- Acceso con los mismos usuarios de la app.
+- Administración y Técnico pueden consultar el contenido operativo central.
+- Voluntariado no tiene acceso al panel administrativo.
+- Consulta de animales, salud, medicación, tratamientos, vacunas, cuidados, historial, tareas, actividad, documentos, reconocimientos, usuarios y estado de sincronización.
+- Apertura de fotos/documentos privados mediante enlaces temporales autorizados.
+- Bandeja de mensajes de contacto con estados: Nuevo, Leído, Respondido, Cerrado y Spam.
+- Ajustes móviles consolidados: botón flotante de WhatsApp, titulares y cabecera/logo.
+- El formulario público de contacto sigue enviando a Supabase.
+
+SEGURIDAD
+- La autorización real se valida en Supabase en cada petición.
+- administracion.html está marcado noindex,nofollow.
+- No se publican service role, contraseñas ni secretos.
+- Los archivos del bucket winston-private siguen siendo privados.
+- La administración central es de solo lectura en esta fase, salvo el estado de mensajes de contacto.
+
+NO SE TOCA
+- App Android v34.13.0.
+- capacitor-mobile.
+- Formato de winston_sync_records.
+- Reglas actuales de sincronización de la app.
+
+PRUEBA FINAL TRAS PUBLICAR
+1. Entrar en administracion.html con antonio.
+2. Comprobar Resumen, Animales, Tareas, Actividad, Documentos, Contacto, Usuarios y Sistema.
+3. Abrir una foto/documento privado.
+4. Cambiar el mensaje de prueba de Nuevo a Leído.
+5. Probar acceso con patri y confirmar que se deniega.
+6. Revisar la web pública en móvil.

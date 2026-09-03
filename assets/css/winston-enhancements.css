@@ -1,0 +1,93 @@
+/* Fase WEB ADMIN — ajustes móviles validados sin rediseñar la web pública. */
+@media (max-width: 900px) {
+  body {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .floating-actions {
+    right: max(12px, env(safe-area-inset-right));
+    bottom: calc(14px + env(safe-area-inset-bottom));
+  }
+
+  .floating-actions a {
+    width: 48px;
+    height: 48px;
+    padding: 0;
+  }
+
+  .floating-actions svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .brand span {
+    font-size: clamp(.96rem, 4.2vw, 1.08rem);
+    line-height: 1.02;
+  }
+
+  .brand small {
+    font-size: .48rem;
+    letter-spacing: .06em;
+  }
+
+  .home-hero h1,
+  .page-hero h1,
+  .legal-hero h1 {
+    font-size: clamp(2.95rem, 13.2vw, 4.55rem);
+    line-height: .91;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+}
+
+@media (max-width: 430px) {
+  body {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom));
+  }
+
+  .site-header {
+    padding-inline: 14px;
+  }
+
+  .brand img {
+    width: 46px;
+    height: 46px;
+  }
+
+  .brand span {
+    font-size: clamp(.92rem, 4.35vw, 1rem);
+  }
+
+  .home-hero h1,
+  .page-hero h1,
+  .legal-hero h1 {
+    font-size: clamp(2.72rem, 12.6vw, 3.85rem);
+    line-height: .93;
+  }
+
+  .floating-actions a {
+    width: 46px;
+    height: 46px;
+  }
+}
+
+@media (max-width: 360px) {
+  .brand small {
+    display: none;
+  }
+
+  .home-hero h1,
+  .page-hero h1,
+  .legal-hero h1 {
+    font-size: clamp(2.5rem, 12.2vw, 3.25rem);
+  }
+}

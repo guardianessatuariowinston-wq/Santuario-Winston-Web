@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Administración · Santuario Winston</title>
+  <meta name="description" content="Acceso privado de Administración de Santuario Winston.">
+  <link rel="icon" href="assets/favicon.svg">
+  <link rel="stylesheet" href="assets/css/admin.css">
+  <script defer src="assets/js/admin-api.js"></script>
+  <script defer src="assets/js/admin.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#admin-main">Saltar al contenido</a>
+
+  <section class="login-screen" id="admin-login-view">
+    <div class="login-card">
+      <a class="login-brand" href="index.html" aria-label="Volver a Santuario Winston">
+        <img src="assets/media/optimized/logos/logo-wisnton-sinfondo.webp" alt="Santuario Winston">
+        <span>Santuario Winston<small>Hogar de caballos libres</small></span>
+      </a>
+      <p class="eyebrow">Zona privada</p>
+      <h1>Administración Santuario Winston</h1>
+      <p class="login-copy">Acceso privado para Administración y Técnico.</p>
+      <form id="admin-login-form" class="login-form" novalidate>
+        <label for="admin-username">Usuario</label>
+        <input id="admin-username" name="username" type="text" autocomplete="username" required autocapitalize="none" spellcheck="false">
+        <label for="admin-password">Contraseña</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit" class="primary-button">Entrar</button>
+      </form>
+      <p class="form-message" id="admin-login-message" role="alert" aria-live="polite"></p>
+      <a class="back-link" href="index.html">← Volver a la web pública</a>
+    </div>
+  </section>
+
+  <div class="admin-shell" id="admin-app" hidden>
+    <aside class="admin-sidebar" aria-label="Administración">
+      <a class="sidebar-brand" href="index.html" aria-label="Santuario Winston, web pública">
+        <img src="assets/media/optimized/logos/logo-wisnton-sinfondo.webp" alt="">
+        <span>Santuario Winston<small>Administración</small></span>
+      </a>
+      <nav class="admin-nav" aria-label="Secciones de Administración">
+        <button type="button" class="is-active" data-section="dashboard">Resumen</button>
+        <button type="button" data-section="animals">Animales</button>
+        <button type="button" data-section="tasks">Tareas</button>
+        <button type="button" data-section="activity">Actividad</button>
+        <button type="button" data-section="documents">Documentos</button>
+        <button type="button" data-section="recognitions">Reconocimientos</button>
+        <button type="button" data-section="contacts">Contacto</button>
+        <button type="button" data-section="users">Usuarios</button>
+        <button type="button" data-section="system">Sistema</button>
+      </nav>
+      <button type="button" id="admin-logout" class="logout-button">Cerrar sesión</button>
+    </aside>
+
+    <div class="admin-workspace">
+      <header class="admin-topbar">
+        <div>
+          <p class="eyebrow">Santuario Winston</p>
+          <p class="admin-profile" id="admin-profile">Administración</p>
+        </div>
+        <button type="button" class="mobile-logout" id="admin-mobile-logout">Cerrar sesión</button>
+      </header>
+      <nav class="admin-mobile-nav" aria-label="Secciones de Administración en móvil">
+        <button type="button" class="is-active" data-section="dashboard">Resumen</button>
+        <button type="button" data-section="animals">Animales</button>
+        <button type="button" data-section="tasks">Tareas</button>
+        <button type="button" data-section="activity">Actividad</button>
+        <button type="button" data-section="documents">Documentos</button>
+        <button type="button" data-section="recognitions">Reconocimientos</button>
+        <button type="button" data-section="contacts">Contacto</button>
+        <button type="button" data-section="users">Usuarios</button>
+        <button type="button" data-section="system">Sistema</button>
+      </nav>
+      <main id="admin-main" class="admin-main" tabindex="-1">
+        <div id="admin-status" class="admin-status" role="status" aria-live="polite"></div>
+        <div id="admin-view"></div>
+      </main>
+    </div>
+  </div>
+
+  <dialog id="admin-dialog" class="admin-dialog" aria-labelledby="admin-dialog-title">
+    <div class="dialog-head">
+      <h2 id="admin-dialog-title">Detalle</h2>
+      <button type="button" id="admin-dialog-close" aria-label="Cerrar detalle">×</button>
+    </div>
+    <div id="admin-dialog-body"></div>
+  </dialog>
+</body>
+</html>
