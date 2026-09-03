@@ -9,6 +9,9 @@ Sitio web público del Santuario Winston. GitHub Pages se utiliza como entorno d
 - `assets/data/habitantes.json` es la fuente estructurada de las 70 historias públicas.
 - `animales/<slug>/index.html` contiene las fichas individuales generadas.
 - `guardianes.html` es la entrada editorial a Los Guardianes del Santuario Winston.
+- `tienda.html` es la fachada pública de la Tienda Solidaria; no contiene checkout ni productos POD inventados.
+- `transparencia.html` centraliza la información pública, campañas, documentación disponible y vías de colaboración.
+- `documentos/transparencia/` queda reservado para documentos públicos reales cuando estén confirmados.
 - `administracion.html` sigue siendo una zona privada independiente y no forma parte del sitemap.
 
 ## Build
@@ -33,6 +36,6 @@ Ese modo habilita indexación. No debe utilizarse en GitHub Pages mientras siga 
 
 ## Futuras ampliaciones
 
-La navegación se centraliza en `scripts/public-shell.mjs`, por lo que una futura **Tienda** o una sección pública de la **App Santuario Winston** podrán añadirse sin rediseñar todas las páginas. En esta fase no hay tienda, integración Print on Demand, pagos ni promoción pública de la app.
+La navegación se centraliza en `scripts/public-shell.mjs`. La Tienda Solidaria ya tiene fachada pública, pero la tienda comercial y los pagos se conectarán más adelante. Transparencia queda preparada para incorporar únicamente documentos públicos reales y confirmados. La promoción pública de la app sigue fuera de esta fase.
 
 La aplicación móvil y `capacitor-mobile` no forman parte de este repositorio público.

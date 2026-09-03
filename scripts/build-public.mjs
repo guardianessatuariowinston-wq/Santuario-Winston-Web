@@ -7,7 +7,9 @@ const run = (script) => {
 run('scripts/extract-habitantes.mjs');
 run('scripts/update-habitantes-directory.mjs');
 run('scripts/build-storefront.mjs');
+run('scripts/build-transparency.mjs');
 run('scripts/update-storefront-links.mjs');
+run('scripts/update-transparency-links.mjs');
 run('scripts/update-public-shell.mjs');
 run('scripts/build-habitantes.mjs');
 run('scripts/update-public-domain.mjs');

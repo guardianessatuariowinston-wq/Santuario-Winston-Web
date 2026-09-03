@@ -4,7 +4,7 @@ const root = path.resolve(import.meta.dirname, '..');
 const residents = JSON.parse(fs.readFileSync(path.join(root,'assets/data/habitantes.json'),'utf8'));
 const site = 'https://santuariowinston.org';
 const publicRoots = [
-  '', 'habitantes.html','guardianes.html','tienda.html','como-ayudar.html','hazte-socio.html','apadrina.html','teaming.html','donar.html','adopciones-solidarias.html','en-busca-del-paraiso.html','voluntariado.html','testimonios.html','voluntariado-habitual.html','larga-estancia.html','actividades.html','sobre-nosotros.html','contacto.html','politica-de-privacidad.html'
+  '', 'habitantes.html','guardianes.html','tienda.html','como-ayudar.html','hazte-socio.html','apadrina.html','teaming.html','donar.html','adopciones-solidarias.html','en-busca-del-paraiso.html','voluntariado.html','testimonios.html','voluntariado-habitual.html','larga-estancia.html','actividades.html','sobre-nosotros.html','transparencia.html','contacto.html','politica-de-privacidad.html'
 ];
 const urls = [
   ...publicRoots.map(p => `${site}/${p}`),

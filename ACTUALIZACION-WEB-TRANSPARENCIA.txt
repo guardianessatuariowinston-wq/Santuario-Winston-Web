@@ -1,0 +1,22 @@
+SANTUARIO WINSTON — ACTUALIZACIÓN WEB: TRANSPARENCIA Y CONFIANZA
+Fecha: 03/09/2026
+
+Incluye:
+- Nueva página transparencia.html.
+- Hero, información institucional, qué hacemos y explicación general del destino de las ayudas.
+- Campañas y necesidades conectadas con En busca del paraíso.
+- Sección de documentación pública preparada sin publicar archivos ficticios.
+- Formas de colaborar y preguntas frecuentes accesibles.
+- Enlaces contextuales desde Sobre nosotros, Cómo ayudar, Donar y En busca del paraíso.
+- Transparencia añadida a navegación institucional, menú móvil y footer.
+- Canonical definitivo preparado para https://santuariowinston.org/transparencia.html.
+- GitHub Pages continúa en noindex/nofollow.
+
+Política de contenido:
+No se han añadido cifras, porcentajes, datos legales, cuentas, gastos, certificados o documentos no confirmados. La carpeta documentos/transparencia/ se reserva para archivos públicos reales cuando el Santuario los facilite y valide.
+
+No se modifica:
+- Aplicación Android/iOS.
+- Supabase.
+- Panel de Administración.
+- Funcionamiento de la Tienda Solidaria.
