@@ -40,7 +40,7 @@ test('all resident static pages exist and contain correct public metadata', () =
     assert.ok(exists(rel), rel);
     const html = read(rel);
     assert.ok(html.includes(`<h1>${row.name}</h1>`), `${row.name} heading`);
-    assert.ok(html.includes(`https://santuariowinston.com/animales/${row.slug}/`));
+    assert.ok(html.includes(`https://santuariowinston.org/animales/${row.slug}/`));
     assert.ok(html.includes('property="og:title"'));
     assert.ok(html.includes('application/ld+json'));
     assert.ok(!/winston-storage:\/\//i.test(html));

@@ -1,0 +1,27 @@
+SANTUARIO WINSTON — ACTUALIZACIÓN WEB: TIENDA SOLIDARIA
+Fecha: 03/09/2026
+
+Incluye:
+- Nueva página tienda.html integrada con la estética del Santuario.
+- Enlaces reales confirmados al libro en Kindle y tapa blanda de Amazon.
+- Tres futuras familias de productos marcadas como "En preparación", sin productos ni precios inventados.
+- Tienda añadida a navegación de escritorio, menú móvil, footer y las 70 fichas de habitantes.
+- Integración editorial discreta en Inicio, Los Guardianes y Cómo ayudar.
+- Arquitectura preparada para conectar más adelante https://tienda.santuariowinston.org/ sin rehacer la web institucional.
+- Sitemap actualizado y dominio canónico público preparado para santuariowinston.org.
+- GitHub Pages continúa como staging con noindex,nofollow y robots.txt bloqueado.
+- No hay carrito, checkout, pagos ni catálogo POD activados en esta fase.
+- Administracion permanece sin cambios respecto al baseline aprobado.
+- App Android / capacitor-mobile no forma parte de este paquete y no se ha tocado.
+
+Validación automática del paquete fuente:
+- 30/30 pruebas superadas.
+- 70/70 fichas de habitantes.
+- 119 archivos multimedia conservados.
+- 0 enlaces/recursos locales rotos según pruebas.
+- 0 secretos o esquemas privados expuestos en la web pública según pruebas y escaneo.
+
+Pendiente deliberadamente:
+- Revisión visual final sobre GitHub Pages por el Santuario, acumulando los fallos para un único parche posterior.
+- Contratación/configuración de Hostinger Ecommerce.
+- Configuración de Print on Demand, pagos, envíos, impuestos y productos reales.
