@@ -1,11 +1,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { targetRoot, publicRootPages } from './target-root.mjs';
+import { contentFileForArticle, contentIndexFiles } from './content-pages.mjs';
 const root=targetRoot();
 const production=process.env.WINSTON_PRODUCTION==='1';
 const value=production?'index,follow':'noindex,nofollow';
 const residents=JSON.parse(fs.readFileSync(path.join(root,'assets/data/habitantes.json'),'utf8'));
-const pages=[...publicRootPages(root),...residents.map(r=>`animales/${r.slug}/index.html`)];
+const articlesFile=path.join(root,'assets/data/articles.json');
+const articles=fs.existsSync(articlesFile)?JSON.parse(fs.readFileSync(articlesFile,'utf8')):[];
+const pages=[...publicRootPages(root),...residents.map(r=>`animales/${r.slug}/index.html`),...contentIndexFiles(),...articles.map(contentFileForArticle)].filter(rel=>fs.existsSync(path.join(root,rel)));
 for(const rel of pages){
   const file=path.join(root,rel); let html=fs.readFileSync(file,'utf8');
   if(/<meta name="robots"[^>]*>/i.test(html)) html=html.replace(/<meta name="robots"[^>]*>/i,`<meta name="robots" content="${value}"/>`);

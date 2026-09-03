@@ -23,6 +23,7 @@ fs.rmSync(dist,{recursive:true,force:true});
 fs.mkdirSync(dist,{recursive:true});
 copyDir(path.join(root,'assets'),path.join(dist,'assets'));
 copyDir(path.join(root,'animales'),path.join(dist,'animales'));
+for(const contentDir of ['blog','aprende','historias']) if(fs.existsSync(path.join(root,contentDir))) copyDir(path.join(root,contentDir),path.join(dist,contentDir));
 if(fs.existsSync(path.join(root,'documentos'))) copyDir(path.join(root,'documentos'),path.join(dist,'documentos'));
 for(const rel of [...publicRootPages(root),'administracion.html','404.html','robots.txt','sitemap.xml','_headers','_redirects','.nojekyll']) copyFile(rel);
 

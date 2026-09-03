@@ -22,6 +22,16 @@
     documents: [],
     recognitions: [],
     contacts: [],
+    sponsorDashboard: null,
+    sponsors: [],
+    sponsorships: [],
+    sponsorPayments: [],
+    sponsorIncidents: [],
+    sponsorResidentSettings: [],
+    publicResidents: [],
+    contentDashboard: null,
+    articles: [],
+    contentRedirects: [],
     users: [],
     sync: null,
   };
@@ -89,6 +99,12 @@
     else date = new Date(String(value));
     if (Number.isNaN(date.getTime())) return escapeHtml(value);
     return new Intl.DateTimeFormat('es-ES', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+  }
+
+  function formatMoneyCent(value) {
+    const cents = Number(value || 0);
+    if (!Number.isFinite(cents)) return '0,00 €';
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(cents / 100);
   }
 
   function maybeDate(key, value) {
@@ -267,6 +283,262 @@
       </article>`).join('') : '<p class="empty-state">No hay mensajes con este filtro.</p>'}</div>`;
   }
 
+  const sponsorStatusLabels = {
+    pending: 'Pendiente',
+    active: 'Activo',
+    payment_issue: 'Incidencia de pago',
+    cancel_scheduled: 'Baja programada',
+    cancelled: 'Cancelado',
+  };
+
+  async function loadPublicResidents() {
+    if (state.publicResidents.length) return state.publicResidents;
+    const response = await fetch('assets/data/habitantes.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('No se pudo cargar el directorio público de habitantes.');
+    const rows = await response.json();
+    state.publicResidents = (Array.isArray(rows) ? rows : []).map((row) => ({
+      slug: String(row.slug || ''),
+      name: String(row.name || ''),
+    })).filter((row) => row.slug && row.name).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    return state.publicResidents;
+  }
+
+  function sponsorResidentSetting(slug) {
+    return state.sponsorResidentSettings.find((row) => row.resident_slug === slug) || null;
+  }
+
+  function renderManualSponsorshipForm() {
+    const options = state.publicResidents.map((resident) => `<option value="${escapeAttr(resident.slug)}">${escapeHtml(resident.name)}</option>`).join('');
+    return `<article class="panel-card sponsor-admin-panel"><h2>Nuevo apadrinamiento manual</h2>
+      <p class="admin-help">Para padrinos históricos o aportaciones gestionadas fuera del futuro cobro automático. No crea una suscripción Stripe.</p>
+      <form class="admin-form-grid" data-manual-sponsorship-form>
+        <label>Nombre<input name="name" required maxlength="120"></label>
+        <label>Apellidos<input name="surnames" maxlength="160"></label>
+        <label>Email<input name="email" type="email" required maxlength="254"></label>
+        <label>Teléfono<input name="phone" maxlength="60"></label>
+        <label>Habitante<select name="residentSlug" required><option value="">Selecciona un habitante</option>${options}</select></label>
+        <label>Aportación mensual (€)<input name="amountEuro" type="number" min="10" step="0.01" value="10" required></label>
+        <label>Fecha de inicio<input name="startedAt" type="date"></label>
+        <label>Nombre para certificado<input name="certificateName" maxlength="180"></label>
+        <label class="admin-check"><input name="isGift" type="checkbox"> Es un regalo</label>
+        <label class="admin-form-wide">Notas internas<input name="personNotes" maxlength="1000"></label>
+        <div class="admin-form-actions admin-form-wide"><button class="primary-button" type="submit">Crear apadrinamiento manual</button></div>
+      </form></article>`;
+  }
+
+  function renderSponsorshipCards() {
+    if (!state.sponsorships.length) return '<p class="empty-state">Todavía no hay apadrinamientos registrados.</p>';
+    return `<div class="card-list">${state.sponsorships.map((item) => {
+      const person = item.sponsor_people || {};
+      const fullName = [person.name, person.surnames].filter(Boolean).join(' ') || 'Padrino sin nombre';
+      const canCancelManual = item.origin === 'manual' && item.status !== 'cancelled';
+      const canCancelStripe = item.origin === 'stripe' && !['cancelled','cancel_scheduled'].includes(item.status);
+      return `<article class="list-card sponsor-card">
+        <div class="list-meta"><span class="status-pill">${escapeHtml(sponsorStatusLabels[item.status] || item.status)}</span><span>${escapeHtml(item.origin === 'manual' ? 'Manual' : 'Stripe')}</span></div>
+        <h3>${escapeHtml(fullName)} · ${escapeHtml(item.resident_name_snapshot)}</h3>
+        <p>${escapeHtml(person.email || '')}</p>
+        <div class="list-meta"><span>${formatMoneyCent(item.importe_cent)}/mes</span><span>Inicio: ${formatDate(item.started_at || item.created_at)}</span></div>
+        ${canCancelManual ? `<div class="contact-actions"><button type="button" data-cancel-manual-sponsorship="${escapeAttr(item.id)}">Dar de baja</button></div>` : ''}
+        ${canCancelStripe ? `<div class="contact-actions"><button type="button" data-cancel-stripe-sponsorship="${escapeAttr(item.id)}">Programar baja al final del periodo</button></div>` : ''}
+      </article>`;
+    }).join('')}</div>`;
+  }
+
+  function renderSponsorPayments() {
+    if (!state.sponsorPayments.length) return '<p class="empty-state">Todavía no hay pagos Stripe registrados.</p>';
+    return `<div class="card-list">${state.sponsorPayments.map((payment) => {
+      const sponsorship = payment.sponsorships || {};
+      const person = sponsorship.sponsor_people || {};
+      const name = [person.name, person.surnames].filter(Boolean).join(' ') || person.email || 'Padrino';
+      const remaining = Math.max(0, Number(payment.amount_cent || 0) - Number(payment.refunded_cent || 0));
+      const refundable = payment.provider === 'stripe' && payment.status === 'paid' && remaining > 0 && payment.external_payment_id;
+      return `<article class="list-card sponsor-card">
+        <div class="list-meta"><span class="status-pill">${escapeHtml(payment.status || '')}</span><span>${escapeHtml(payment.provider || '')}</span></div>
+        <h3>${escapeHtml(name)} · ${escapeHtml(sponsorship.resident_name_snapshot || '')}</h3>
+        <div class="list-meta"><span>${formatMoneyCent(payment.amount_cent)}</span><span>${formatDate(payment.paid_at || payment.created_at)}</span></div>
+        ${payment.refunded_cent ? `<p>Reembolsado: ${formatMoneyCent(payment.refunded_cent)}</p>` : ''}
+        ${refundable ? `<div class="contact-actions"><button type="button" data-refund-stripe-payment="${escapeAttr(payment.id)}" data-refundable-cent="${escapeAttr(remaining)}">Reembolsar</button></div>` : ''}
+      </article>`;
+    }).join('')}</div>`;
+  }
+
+  function renderSponsorIncidents() {
+    const open = state.sponsorIncidents.filter((item) => item.status === 'open');
+    if (!open.length) return '<p class="empty-state">No hay incidencias de pago abiertas.</p>';
+    return `<div class="card-list">${open.map((item) => {
+      const sponsorship = item.sponsorships || {};
+      const person = sponsorship.sponsor_people || {};
+      const name = [person.name, person.surnames].filter(Boolean).join(' ') || person.email || 'Padrino';
+      return `<article class="list-card sponsor-card"><div class="list-meta"><span class="status-pill">Incidencia</span><span>${formatDate(item.opened_at)}</span></div><h3>${escapeHtml(name)} · ${escapeHtml(sponsorship.resident_name_snapshot || '')}</h3><p>${escapeHtml(item.detail || item.incident_type || '')}</p></article>`;
+    }).join('')}</div>`;
+  }
+
+  function renderResidentSettingCards() {
+    if (!state.publicResidents.length) return '<p class="empty-state">No se pudo cargar el directorio público.</p>';
+    return `<div class="sponsor-resident-list">${state.publicResidents.map((resident) => {
+      const setting = sponsorResidentSetting(resident.slug);
+      const enabled = Boolean(setting?.enabled);
+      return `<article class="list-card sponsor-resident-row">
+        <div><h3>${escapeHtml(resident.name)}</h3><div class="list-meta"><span class="status-pill">${enabled ? 'Apadrinable' : 'No publicado'}</span><span>Mínimo: ${formatMoneyCent(setting?.minimum_amount_cent || 1000)}</span></div></div>
+        <button type="button" class="file-button" data-edit-sponsor-resident="${escapeAttr(resident.slug)}">Configurar</button>
+      </article>`;
+    }).join('')}</div>`;
+  }
+
+  function renderSponsors() {
+    const c = state.sponsorDashboard?.counts || {};
+    const billingReady = Boolean(state.sponsorDashboard?.billingReady);
+    const billingMode = state.sponsorDashboard?.billingMode === 'live' ? 'Producción' : (state.sponsorDashboard?.billingMode === 'test' ? 'Pruebas' : 'Pendiente de claves');
+    return `${pageHead('Padrinos', 'Gestión de padrinos y configuración de habitantes, separada de los datos clínicos y operativos.')}
+      <section class="metric-grid" aria-label="Resumen de padrinos">
+        ${metric('Padrinos activos', c.people)}
+        ${metric('Apadrinamientos activos', c.activeSponsorships)}
+        ${metric('Aportación mensual', formatMoneyCent(c.monthlyCent))}
+        ${metric('Incidencias', c.openIncidents)}
+        ${metric('Habitantes apadrinables', c.enabledResidents)}
+        ${metric('Stripe', billingReady ? `Preparado · ${billingMode}` : billingMode)}
+      </section>
+      ${billingReady ? '' : '<div class="admin-notice"><strong>Stripe todavía no está activado.</strong> La gestión manual funciona; el checkout público permanecerá desactivado hasta configurar las claves seguras.</div>'}
+      <section class="sponsor-admin-grid">
+        ${renderManualSponsorshipForm()}
+        <article class="panel-card sponsor-admin-panel"><h2>Habitantes apadrinables</h2><p class="admin-help">Nada se publica automáticamente: activa y configura cada habitante cuando corresponda.</p>${renderResidentSettingCards()}</article>
+      </section>
+      <section class="panel-card sponsor-admin-panel sponsor-list-panel"><h2>Apadrinamientos registrados</h2>${renderSponsorshipCards()}</section>
+      <section class="sponsor-admin-grid sponsor-list-panel">
+        <article class="panel-card sponsor-admin-panel"><h2>Pagos</h2>${renderSponsorPayments()}</article>
+        <article class="panel-card sponsor-admin-panel"><h2>Incidencias de pago</h2>${renderSponsorIncidents()}</article>
+      </section>`;
+  }
+
+  function openResidentSetting(slug) {
+    const resident = state.publicResidents.find((row) => row.slug === slug);
+    if (!resident) return;
+    const setting = sponsorResidentSetting(slug) || {};
+    const suggested = Array.isArray(setting.suggested_amounts_cent) && setting.suggested_amounts_cent.length
+      ? setting.suggested_amounts_cent.map((value) => Number(value) / 100).join(', ')
+      : '10, 15, 25';
+    dialogTitle.textContent = `Apadrinamiento · ${resident.name}`;
+    dialogBody.innerHTML = `<form class="admin-form-grid" data-sponsor-resident-form data-resident-slug="${escapeAttr(slug)}">
+      <label class="admin-check admin-form-wide"><input name="enabled" type="checkbox"${setting.enabled ? ' checked' : ''}> Permitir apadrinamiento público</label>
+      <label>Mínimo mensual (€)<input name="minimumEuro" type="number" min="10" step="0.01" value="${escapeAttr(Number(setting.minimum_amount_cent || 1000) / 100)}" required></label>
+      <label>Importes sugeridos (€)<input name="suggestedEuro" value="${escapeAttr(suggested)}" aria-describedby="suggested-help" required><small id="suggested-help">Separados por comas. Ej.: 10, 15, 25</small></label>
+      <label class="admin-check"><input name="allowCustomAmount" type="checkbox"${setting.allow_custom_amount !== false ? ' checked' : ''}> Permitir otra cantidad</label>
+      <label class="admin-check"><input name="showSponsorCount" type="checkbox"${setting.show_sponsor_count ? ' checked' : ''}> Mostrar número de padrinos</label>
+      <label class="admin-form-wide">Mensaje público<textarea name="publicMessage" rows="4" maxlength="1200">${escapeHtml(setting.public_message || '')}</textarea></label>
+      <div class="admin-form-actions admin-form-wide"><button class="primary-button" type="submit">Guardar configuración</button></div>
+    </form>`;
+    dialog.showModal();
+  }
+
+  async function refreshSponsorsView(message = '') {
+    const [dashboard, people, sponsorships, payments, incidents, settings] = await Promise.all([
+      Api.callSponsors('dashboard'),
+      Api.callSponsors('sponsors'),
+      Api.callSponsors('sponsorships'),
+      Api.callSponsors('payments'),
+      Api.callSponsors('incidents'),
+      Api.callSponsors('resident_settings'),
+    ]);
+    state.sponsorDashboard = dashboard;
+    state.sponsors = people.sponsors || [];
+    state.sponsorships = sponsorships.sponsorships || [];
+    state.sponsorPayments = payments.payments || [];
+    state.sponsorIncidents = incidents.incidents || [];
+    state.sponsorResidentSettings = settings.residents || [];
+    adminView.innerHTML = renderSponsors();
+    setStatus(message);
+  }
+
+  const contentKindLabels = { blog: 'Blog / Actualidad', aprende: 'Aprende con Winston', historias: 'Archivo histórico' };
+  const contentStatusLabels = { draft: 'Borrador', published: 'Publicado', scheduled: 'Programado', hidden: 'Oculto' };
+
+  function slugifyContent(value) {
+    return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 180);
+  }
+
+  function renderContent() {
+    const c = state.contentDashboard?.counts || {};
+    const deployReady = Boolean(state.contentDashboard?.autoPublishConfigured);
+    return `${pageHead('Contenido', 'Publica y edita Blog, Aprende con Winston y el archivo histórico sin tocar código.')}
+      <section class="metric-grid" aria-label="Resumen editorial">
+        ${metric('Publicados', c.published)}${metric('Borradores', c.drafts)}${metric('Programados', c.scheduled)}${metric('Total', c.total)}
+      </section>
+      <article class="panel-card content-publish-state"><h2>Publicación web</h2><p>${deployReady ? 'La publicación automática está conectada: al publicar u ocultar un artículo se solicita una nueva versión de la web.' : 'El editor ya guarda en Supabase. Falta configurar el Deploy Hook de Cloudflare para que el botón Publicar actualice la web automáticamente.'}</p></article>
+      <div class="toolbar"><button type="button" class="primary-button" data-new-article>Nuevo artículo</button></div>
+      <div class="card-list">${state.articles.length ? state.articles.map((article) => `<article class="list-card content-article-card">
+        <div class="list-meta"><span class="status-pill">${escapeHtml(contentStatusLabels[article.status] || article.status)}</span><span>${escapeHtml(contentKindLabels[article.kind] || article.kind)}</span><span>${formatDate(article.updated_at)}</span></div>
+        <h3>${escapeHtml(article.title)}</h3><p>${escapeHtml(article.excerpt || 'Sin resumen')}</p>
+        <div class="list-meta"><span>/${escapeHtml(article.kind)}/${escapeHtml(article.slug)}/</span>${article.category ? `<span>${escapeHtml(article.category)}</span>` : ''}</div>
+        <div class="contact-actions"><button type="button" data-edit-article="${escapeAttr(article.id)}">Editar</button>${article.status !== 'hidden' ? `<button type="button" data-delete-article="${escapeAttr(article.id)}">Ocultar</button>` : ''}</div>
+      </article>`).join('') : '<p class="empty-state">Todavía no hay artículos. Puedes empezar recuperando contenido educativo de la web histórica.</p>'}</div>`;
+  }
+
+  async function refreshContentView(message = '') {
+    const [dashboard, articles, redirects] = await Promise.all([
+      Api.callContent('dashboard'), Api.callContent('articles'), Api.callContent('redirects'),
+    ]);
+    state.contentDashboard = dashboard;
+    state.articles = articles.articles || [];
+    state.contentRedirects = redirects.redirects || [];
+    adminView.innerHTML = renderContent();
+    setStatus(message);
+  }
+
+  function articleResidentOptions(selected = []) {
+    const set = new Set(Array.isArray(selected) ? selected : []);
+    return state.publicResidents.map((resident) => `<option value="${escapeAttr(resident.slug)}"${set.has(resident.slug) ? ' selected' : ''}>${escapeHtml(resident.name)}</option>`).join('');
+  }
+
+  async function openArticleEditor(id = '') {
+    await loadPublicResidents();
+    let article = { id: '', title: '', slug: '', kind: 'blog', excerpt: '', body_markdown: '', category: '', author_name: 'Santuario Winston', status: 'draft', scheduled_at: '', featured_image_path: '', featured_image_alt: '', seo_title: '', seo_description: '', related_resident_slugs: [], is_featured: false, source_url: '', original_published_at: '', original_author_name: '', review_note: '' };
+    if (id) {
+      const result = await Api.callContent('article', { id });
+      article = { ...article, ...(result.article || {}) };
+    }
+    dialogTitle.textContent = id ? 'Editar artículo' : 'Nuevo artículo';
+    dialogBody.innerHTML = `<form class="admin-form-grid content-editor-form" data-content-article-form data-article-id="${escapeAttr(article.id || '')}">
+      <label class="admin-form-wide">Título<input name="title" value="${escapeAttr(article.title || '')}" maxlength="180" required data-content-title></label>
+      <label>URL / slug<input name="slug" value="${escapeAttr(article.slug || '')}" maxlength="180" pattern="[a-z0-9]+(?:-[a-z0-9]+)*" required data-content-slug></label>
+      <label>Sección<select name="kind"><option value="blog"${article.kind === 'blog' ? ' selected' : ''}>Blog / Actualidad</option><option value="aprende"${article.kind === 'aprende' ? ' selected' : ''}>Aprende con Winston</option><option value="historias"${article.kind === 'historias' ? ' selected' : ''}>Archivo histórico</option></select></label>
+      <label>Estado<select name="status"><option value="draft"${article.status === 'draft' ? ' selected' : ''}>Borrador</option><option value="published"${article.status === 'published' ? ' selected' : ''}>Publicado</option><option value="scheduled"${article.status === 'scheduled' ? ' selected' : ''}>Programado</option><option value="hidden"${article.status === 'hidden' ? ' selected' : ''}>Oculto</option></select></label>
+      <label>Programar para<input name="scheduledAt" type="datetime-local" value="${article.scheduled_at ? escapeAttr(String(article.scheduled_at).slice(0,16)) : ''}"></label>
+      <label class="admin-form-wide">Resumen<textarea name="excerpt" rows="3" maxlength="500">${escapeHtml(article.excerpt || '')}</textarea></label>
+      <label>Categoría<input name="category" value="${escapeAttr(article.category || '')}" maxlength="120"></label>
+      <label>Autor<input name="authorName" value="${escapeAttr(article.author_name || 'Santuario Winston')}" maxlength="160"></label>
+      <fieldset class="admin-form-wide content-provenance"><legend>Procedencia histórica</legend><div class="admin-form-grid">
+        <label class="admin-form-wide">URL original<input name="sourceUrl" type="url" value="${escapeAttr(article.source_url || '')}" placeholder="https://santuariowinston.wordpress.com/..."></label>
+        <label>Fecha original<input name="originalPublishedAt" type="datetime-local" value="${article.original_published_at ? escapeAttr(String(article.original_published_at).slice(0,16)) : ''}"></label>
+        <label>Autor original<input name="originalAuthorName" value="${escapeAttr(article.original_author_name || '')}" maxlength="160"></label>
+        <label class="admin-form-wide">Nota de revisión<textarea name="reviewNote" rows="3" maxlength="2000" placeholder="Uso interno: qué falta revisar antes de publicar">${escapeHtml(article.review_note || '')}</textarea></label>
+      </div></fieldset>
+      <div class="admin-form-wide"><span class="admin-field-label">Contenido</span><div class="markdown-toolbar" aria-label="Formato del artículo"><button type="button" data-md="h2">H2</button><button type="button" data-md="bold">Negrita</button><button type="button" data-md="list">Lista</button><button type="button" data-md="quote">Cita</button><button type="button" data-md="link">Enlace</button></div><textarea name="bodyMarkdown" rows="18" data-content-body>${escapeHtml(article.body_markdown || '')}</textarea><small class="admin-help">El editor no acepta HTML. Los botones aplican un formato seguro que después se convierte automáticamente en la página pública.</small></div>
+      <label class="admin-form-wide">Imagen destacada (ruta pública)<input name="featuredImagePath" value="${escapeAttr(article.featured_image_path || '')}" placeholder="assets/media/optimized/..."></label>
+      <label class="admin-form-wide">Texto alternativo de la imagen<input name="featuredImageAlt" value="${escapeAttr(article.featured_image_alt || '')}" maxlength="250"></label>
+      <label class="admin-form-wide">Habitantes relacionados<select name="relatedResidentSlugs" multiple size="6">${articleResidentOptions(article.related_resident_slugs)}</select></label>
+      <label class="admin-check"><input name="isFeatured" type="checkbox"${article.is_featured ? ' checked' : ''}> Artículo destacado</label>
+      <label class="admin-form-wide">Título SEO<input name="seoTitle" value="${escapeAttr(article.seo_title || '')}" maxlength="180" placeholder="Si lo dejas vacío se genera automáticamente"></label>
+      <label class="admin-form-wide">Descripción SEO<textarea name="seoDescription" rows="3" maxlength="320" placeholder="Si la dejas vacía se usa el resumen">${escapeHtml(article.seo_description || '')}</textarea></label>
+      <div class="admin-form-actions admin-form-wide"><button class="primary-button" type="submit">Guardar artículo</button></div>
+    </form>`;
+    dialog.showModal();
+  }
+
+  function applyMarkdownTool(textarea, type) {
+    const start = textarea.selectionStart || 0, end = textarea.selectionEnd || 0;
+    const selected = textarea.value.slice(start, end) || 'texto';
+    const forms = {
+      h2: `## ${selected}`,
+      bold: `**${selected}**`,
+      list: selected.split(/\n/).map((line) => `- ${line.replace(/^[-*]\s*/, '')}`).join('\n'),
+      quote: selected.split(/\n/).map((line) => `> ${line.replace(/^>\s*/, '')}`).join('\n'),
+      link: `[${selected}](https://)`,
+    };
+    const replacement = forms[type] || selected;
+    textarea.setRangeText(replacement, start, end, 'end');
+    textarea.focus();
+  }
+
   function renderUsers(users = state.users) {
     return `${pageHead('Usuarios', 'Personas con cuenta en el ecosistema, sin mostrar credenciales ni secretos.')}
       <div class="card-list">${users.length ? users.map((user) => `<article class="list-card"><h3>${escapeHtml(user.display_name || user.username || 'Usuario')}</h3>
@@ -366,6 +638,11 @@
         const result = await Api.call('records', { recordType: 'recognition' }); state.recognitions = result.records || []; adminView.innerHTML = renderRecognitions();
       } else if (section === 'contacts') {
         const result = await Api.call('contacts'); state.contacts = result.contacts || []; adminView.innerHTML = renderContacts();
+      } else if (section === 'sponsors') {
+        await loadPublicResidents();
+        await refreshSponsorsView();
+      } else if (section === 'content') {
+        await refreshContentView();
       } else if (section === 'users') {
         const result = await Api.call('users'); state.users = result.users || []; adminView.innerHTML = renderUsers();
       } else if (section === 'system') {
@@ -460,13 +737,196 @@
       openPrivateFile(fileButton.dataset.privateUri, fileButton);
       return;
     }
+    const editSponsorResident = event.target.closest('[data-edit-sponsor-resident]');
+    if (editSponsorResident) {
+      openResidentSetting(editSponsorResident.dataset.editSponsorResident);
+      return;
+    }
+    const cancelManual = event.target.closest('[data-cancel-manual-sponsorship]');
+    if (cancelManual) {
+      const id = cancelManual.dataset.cancelManualSponsorship;
+      if (!window.confirm('¿Dar de baja este apadrinamiento manual? El historial se conservará.')) return;
+      setStatus('Dando de baja…');
+      Api.callSponsors('cancel_manual_sponsorship', { id })
+        .then(() => refreshSponsorsView('Apadrinamiento dado de baja.'))
+        .catch(async (error) => {
+          if (await handleAuthError(error)) return;
+          setStatus(error?.message || 'No se pudo dar de baja el apadrinamiento.');
+        });
+      return;
+    }
+    const cancelStripe = event.target.closest('[data-cancel-stripe-sponsorship]');
+    if (cancelStripe) {
+      const id = cancelStripe.dataset.cancelStripeSponsorship;
+      if (!window.confirm('¿Programar la baja al final del periodo ya pagado? El historial se conservará.')) return;
+      setStatus('Programando baja…');
+      Api.callSponsors('schedule_stripe_cancellation', { id })
+        .then(() => refreshSponsorsView('Baja Stripe programada al final del periodo.'))
+        .catch(async (error) => {
+          if (await handleAuthError(error)) return;
+          setStatus(error?.message || 'No se pudo programar la baja.');
+        });
+      return;
+    }
+    const refundStripe = event.target.closest('[data-refund-stripe-payment]');
+    if (refundStripe) {
+      const id = refundStripe.dataset.refundStripePayment;
+      const refundableCent = Number(refundStripe.dataset.refundableCent || 0);
+      const suggested = (refundableCent / 100).toFixed(2).replace('.', ',');
+      const raw = window.prompt(`Importe a reembolsar en euros (máximo ${suggested} €):`, suggested);
+      if (raw === null) return;
+      const amountCent = Math.round(Number(String(raw).replace(',', '.')) * 100);
+      if (!Number.isInteger(amountCent) || amountCent <= 0 || amountCent > refundableCent) {
+        setStatus('Importe de reembolso no válido.');
+        return;
+      }
+      if (!window.confirm(`¿Solicitar a Stripe el reembolso de ${formatMoneyCent(amountCent)}?`)) return;
+      setStatus('Solicitando reembolso…');
+      Api.callSponsors('refund_stripe_payment', { id, amountCent })
+        .then(() => refreshSponsorsView('Reembolso solicitado. Stripe confirmará el estado mediante webhook.'))
+        .catch(async (error) => {
+          if (await handleAuthError(error)) return;
+          setStatus(error?.message || 'No se pudo solicitar el reembolso.');
+        });
+      return;
+    }
+    const newArticle = event.target.closest('[data-new-article]');
+    if (newArticle) { openArticleEditor().catch((error) => setStatus(error?.message || 'No se pudo abrir el editor.')); return; }
+    const editArticle = event.target.closest('[data-edit-article]');
+    if (editArticle) { openArticleEditor(editArticle.dataset.editArticle).catch((error) => setStatus(error?.message || 'No se pudo abrir el artículo.')); return; }
+    const deleteArticle = event.target.closest('[data-delete-article]');
+    if (deleteArticle) {
+      if (!window.confirm('¿Ocultar este artículo de la web? Se conservará en el historial editorial.')) return;
+      setStatus('Ocultando artículo…');
+      Api.callContent('delete_article', { id: deleteArticle.dataset.deleteArticle })
+        .then(() => refreshContentView('Artículo ocultado.'))
+        .catch(async (error) => { if (await handleAuthError(error)) return; setStatus(error?.message || 'No se pudo ocultar el artículo.'); });
+      return;
+    }
     const contactButton = event.target.closest('[data-save-contact]');
     if (contactButton) saveContactStatus(contactButton.dataset.saveContact);
   });
 
   dialogBody?.addEventListener('click', (event) => {
     const fileButton = event.target.closest('[data-private-uri]');
-    if (fileButton) openPrivateFile(fileButton.dataset.privateUri, fileButton);
+    if (fileButton) { openPrivateFile(fileButton.dataset.privateUri, fileButton); return; }
+    const mdButton = event.target.closest('[data-md]');
+    if (mdButton) {
+      const textarea = dialogBody.querySelector('[data-content-body]');
+      if (textarea) applyMarkdownTool(textarea, mdButton.dataset.md);
+    }
+  });
+
+  adminView?.addEventListener('submit', async (event) => {
+    const form = event.target.closest('[data-manual-sponsorship-form]');
+    if (!form) return;
+    event.preventDefault();
+    const data = new FormData(form);
+    const residentSlug = String(data.get('residentSlug') || '');
+    const resident = state.publicResidents.find((row) => row.slug === residentSlug);
+    const amount = Math.round(Number(data.get('amountEuro')) * 100);
+    if (!resident || !Number.isInteger(amount) || amount < 1000) {
+      setStatus('Revisa el habitante y la aportación mensual.');
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    setStatus('Creando apadrinamiento…');
+    try {
+      await Api.callSponsors('create_manual_sponsorship', {
+        name: data.get('name'),
+        surnames: data.get('surnames'),
+        email: data.get('email'),
+        phone: data.get('phone'),
+        residentSlug,
+        residentName: resident.name,
+        amountCent: amount,
+        startedAt: data.get('startedAt') || undefined,
+        certificateName: data.get('certificateName'),
+        isGift: data.get('isGift') === 'on',
+        personNotes: data.get('personNotes'),
+      });
+      await refreshSponsorsView('Apadrinamiento manual creado.');
+    } catch (error) {
+      if (await handleAuthError(error)) return;
+      setStatus(error?.message || 'No se pudo crear el apadrinamiento.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  dialogBody?.addEventListener('submit', async (event) => {
+    const contentForm = event.target.closest('[data-content-article-form]');
+    if (contentForm) {
+      event.preventDefault();
+      const data = new FormData(contentForm);
+      const button = contentForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      setStatus('Guardando artículo…');
+      try {
+        const relatedResidentSlugs = Array.from(contentForm.querySelector('[name="relatedResidentSlugs"]')?.selectedOptions || []).map((option) => option.value);
+        const result = await Api.callContent('save_article', {
+          id: contentForm.dataset.articleId || undefined,
+          title: data.get('title'), slug: data.get('slug'), kind: data.get('kind'), status: data.get('status'), scheduledAt: data.get('scheduledAt') || undefined,
+          excerpt: data.get('excerpt'), category: data.get('category'), authorName: data.get('authorName'), bodyMarkdown: data.get('bodyMarkdown'),
+          featuredImagePath: data.get('featuredImagePath'), featuredImageAlt: data.get('featuredImageAlt'), relatedResidentSlugs,
+          isFeatured: data.get('isFeatured') === 'on', seoTitle: data.get('seoTitle'), seoDescription: data.get('seoDescription'),
+          sourceUrl: data.get('sourceUrl'), originalPublishedAt: data.get('originalPublishedAt') || undefined, originalAuthorName: data.get('originalAuthorName'), reviewNote: data.get('reviewNote'),
+        });
+        dialog.close();
+        await refreshContentView(result?.deploy?.triggered ? 'Artículo guardado y publicación solicitada.' : 'Artículo guardado.');
+      } catch (error) {
+        if (await handleAuthError(error)) return;
+        setStatus(error?.message || 'No se pudo guardar el artículo.');
+      } finally { button.disabled = false; }
+      return;
+    }
+    const form = event.target.closest('[data-sponsor-resident-form]');
+    if (!form) return;
+    event.preventDefault();
+    const slug = form.dataset.residentSlug;
+    const resident = state.publicResidents.find((row) => row.slug === slug);
+    if (!resident) return;
+    const data = new FormData(form);
+    const minimumAmountCent = Math.round(Number(data.get('minimumEuro')) * 100);
+    const suggestedAmountsCent = String(data.get('suggestedEuro') || '')
+      .split(',')
+      .map((value) => Math.round(Number(value.trim().replace(',', '.')) * 100))
+      .filter((value) => Number.isInteger(value) && value >= 1000);
+    if (!Number.isInteger(minimumAmountCent) || minimumAmountCent < 1000 || !suggestedAmountsCent.length) {
+      setStatus('Revisa el mínimo y los importes sugeridos.');
+      return;
+    }
+    const button = form.querySelector('button[type="submit"]');
+    button.disabled = true;
+    setStatus('Guardando configuración…');
+    try {
+      await Api.callSponsors('save_resident_setting', {
+        residentSlug: slug,
+        displayName: resident.name,
+        enabled: data.get('enabled') === 'on',
+        minimumAmountCent,
+        suggestedAmountsCent,
+        allowCustomAmount: data.get('allowCustomAmount') === 'on',
+        showSponsorCount: data.get('showSponsorCount') === 'on',
+        publicMessage: data.get('publicMessage'),
+      });
+      dialog.close();
+      await refreshSponsorsView('Configuración de apadrinamiento guardada.');
+    } catch (error) {
+      if (await handleAuthError(error)) return;
+      setStatus(error?.message || 'No se pudo guardar la configuración.');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  dialogBody?.addEventListener('input', (event) => {
+    if (event.target.matches('[data-content-title]')) {
+      const slug = dialogBody.querySelector('[data-content-slug]');
+      if (slug && !slug.dataset.touched) slug.value = slugifyContent(event.target.value);
+    }
+    if (event.target.matches('[data-content-slug]')) event.target.dataset.touched = '1';
   });
 
   adminView?.addEventListener('input', (event) => {

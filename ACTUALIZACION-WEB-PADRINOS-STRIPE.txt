@@ -1,0 +1,63 @@
+SANTUARIO WINSTON · PADRINOS · FASE 2 · STRIPE READY
+Fecha: 03/09/2026
+
+IMPLEMENTADO EN CÓDIGO
+- Checkout mensual de Padrinos preparado mediante Stripe Checkout server-side.
+- Selección pública de habitante e importe configurable desde Supabase.
+- Aportación mínima y cantidades sugeridas validadas también en servidor.
+- Consentimiento de privacidad obligatorio y comunicaciones opcionales separadas.
+- Página pública Apadrina conectada a la Edge Function de Padrinos.
+- Retorno de Checkout no activa por sí mismo un apadrinamiento: la confirmación depende del webhook.
+- Webhook Stripe con verificación HMAC de `Stripe-Signature` antes de parsear JSON.
+- Tolerancia temporal de firma de 300 segundos.
+- Idempotencia mediante `stripe_webhook_events` para evitar procesar dos veces el mismo evento.
+- Gestión de `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.updated`, `customer.subscription.deleted` y `charge.refunded`.
+- Registro de pagos, incidencias, renovaciones, cancelaciones y reembolsos.
+- Panel Administración ampliado con pagos e incidencias.
+- Cancelación Stripe programada al final del periodo ya pagado.
+- Reembolsos solicitados a Stripe desde Administración; el estado local se confirma por webhook.
+- Estado de Stripe visible en Administración: no configurado / pruebas / producción.
+- Mensaje público de Apadrina cambia automáticamente cuando el cobro online esté realmente activado.
+
+IMPLEMENTADO EN SUPABASE
+- Migración `sponsorships_stripe_phase2` aplicada.
+- Migración `sponsorships_stripe_customer_per_subscription` aplicada.
+- Tabla `stripe_webhook_events` con RLS y acceso de clientes explícitamente denegado.
+- Identificadores duraderos para Checkout, Customer, Subscription, Invoice y Payment Intent.
+- Edge Function `winston-sponsors-public` activa (checkout/configuración pública controlada).
+- Edge Function `winston-stripe-webhook` activa (webhook firmado e idempotente).
+- Edge Function `winston-sponsors-admin` actualizada a versión 2 y protegida por JWT + rol.
+
+SEGURIDAD
+- Ninguna clave secreta de Stripe aparece en HTML/JavaScript público.
+- Ningún `service_role` aparece en cliente.
+- No se almacenan número de tarjeta ni CVC.
+- Las operaciones económicas de administración requieren JWT y rol `technical` o `admin`.
+- El webhook público no confía en CORS ni JWT: valida criptográficamente la firma de Stripe.
+- Los eventos duplicados no duplican pagos ni cambios de estado.
+- Los apadrinamientos Stripe y manuales permanecen diferenciados.
+
+PENDIENTE DE ACTIVACIÓN REAL
+- Configurar de forma segura `STRIPE_SECRET_KEY` en los secretos de Supabase.
+- Crear el endpoint webhook en Stripe y configurar `STRIPE_WEBHOOK_SECRET` en Supabase.
+- Configurar `WINSTON_SITE_URL` con el dominio definitivo si fuera distinto de `https://santuariowinston.org`.
+- Probar el flujo completo con Stripe Test Mode antes de introducir claves live.
+- Activar habitantes concretos para apadrinamiento desde Administración.
+- Antes de producción, valorar protección adicional anti-abuso (por ejemplo Cloudflare Turnstile) en el checkout público.
+
+NO HACER
+- No pegar claves `sk_...` o `whsec_...` dentro del repositorio, HTML, JavaScript ni conversaciones.
+- No marcar manualmente un pago como pagado o reembolsado sin confirmación del proveedor.
+
+VALIDACIÓN
+- Build de staging reproducible.
+- 65/65 pruebas superadas tras la integración Stripe.
+- `node --check` correcto en `assets/js/admin.js` y `assets/js/sponsorships.js`.
+- `git diff --check` sin errores.
+- Escaneo local sin claves `sk_live_`, `sk_test_` ni `whsec_` incrustadas.
+- Supabase confirma RLS en las tablas de Padrinos y `stripe_webhook_events`.
+- Asesores Supabase: ningún aviso nuevo de seguridad causado por Stripe.
+
+AVISOS PREEXISTENTES EN SUPABASE
+- Protección de contraseñas filtradas de Supabase Auth desactivada.
+- `contact_messages` tiene RLS sin política pública; es anterior a esta fase.

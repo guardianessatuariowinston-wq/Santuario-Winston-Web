@@ -4,6 +4,8 @@
   const SUPABASE_URL = 'https://fooymzhvkmpejiafuyvq.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_MqWbSJNfvlsUF-QacUiVFw_-e1QmDh_';
   const ADMIN_ENDPOINT = `${SUPABASE_URL}/functions/v1/winston-web-admin`;
+  const SPONSORS_ENDPOINT = `${SUPABASE_URL}/functions/v1/winston-sponsors-admin`;
+  const CONTENT_ENDPOINT = `${SUPABASE_URL}/functions/v1/winston-content-admin`;
   const SESSION_KEY = 'winston-admin-session-v1';
 
   function makeError(message, code, status) {
@@ -147,6 +149,74 @@
     return result;
   }
 
+  async function callSponsors(action, payload = {}) {
+    let session = await restoreSession();
+    if (!session) throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401);
+
+    const perform = async () => requestJson(SPONSORS_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action, ...payload }),
+    });
+
+    let { response, payload: result } = await perform();
+    if (response.status === 401) {
+      try {
+        session = await refreshSession(session);
+        ({ response, payload: result } = await perform());
+      } catch {
+        clearSession();
+        throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401);
+      }
+    }
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        clearSession();
+        throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401);
+      }
+      if (response.status === 403) throw makeError('Esta cuenta no tiene acceso a Padrinos.', 'FORBIDDEN', 403);
+      throw makeError(result?.error || 'No se pudo completar la operación de padrinos.', 'REQUEST_FAILED', response.status);
+    }
+    return result;
+  }
+
+  async function callContent(action, payload = {}) {
+    let session = await restoreSession();
+    if (!session) throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401);
+
+    const perform = async () => requestJson(CONTENT_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ action, ...payload }),
+    });
+
+    let { response, payload: result } = await perform();
+    if (response.status === 401) {
+      try {
+        session = await refreshSession(session);
+        ({ response, payload: result } = await perform());
+      } catch {
+        clearSession();
+        throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401);
+      }
+    }
+    if (!response.ok) {
+      if (response.status === 401) { clearSession(); throw makeError('Tu sesión ha caducado. Vuelve a entrar.', 'SESSION_EXPIRED', 401); }
+      if (response.status === 403) throw makeError('Esta cuenta no tiene acceso a Contenido.', 'FORBIDDEN', 403);
+      throw makeError(result?.error || 'No se pudo completar la operación de contenido.', 'REQUEST_FAILED', response.status);
+    }
+    return result;
+  }
+
   async function signedFile(uri) {
     return call('signed_file', { uri });
   }
@@ -175,6 +245,8 @@
     logout,
     restoreSession,
     call,
+    callSponsors,
+    callContent,
     signedFile,
   };
 })();

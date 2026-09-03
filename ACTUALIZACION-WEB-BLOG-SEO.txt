@@ -1,0 +1,71 @@
+SANTUARIO WINSTON · BLOG + APRENDE + SEO/CMS
+Fecha: 3 de septiembre de 2026
+Rama local de trabajo: feature/padrinos-blog-cms
+
+OBJETIVO
+Añadir un sistema editorial autogestionable sobre la arquitectura existente (HTML estático generado + Supabase + Cloudflare), sin sustituir ni mezclar la base operativa de animales/app.
+
+IMPLEMENTADO
+- Nueva sección «Contenido» en Administración, disponible para roles technical/admin.
+- Gestión de artículos con estados: borrador, publicado, programado y oculto.
+- Tres áreas públicas separadas:
+  · /blog/
+  · /aprende/
+  · /historias/
+- Editor Markdown seguro con H2/H3, negrita, cursiva, listas, citas y enlaces HTTPS.
+- Campos de resumen, categoría, autor, imagen destacada/ALT, SEO title, SEO description, destacado y habitantes relacionados.
+- Slug editable y creación automática de redirección 301 cuando cambia la URL de un artículo ya publicado.
+- Borrado editorial no destructivo: «ocultar» conserva historial y auditoría.
+- Nueva tabla de auditoría editorial.
+- Enlaces Blog, Aprende con Winston y Archivo histórico en navegación Descubre/móvil/pie.
+- Generación de HTML estático para índices y artículos.
+- Canonical, Open Graph, Twitter, JSON-LD BlogPosting y breadcrumbs en artículos generados.
+- Sitemap incluye las tres secciones y los artículos publicados.
+- Cloudflare _redirects incorpora redirecciones editoriales activas.
+- Artículos pueden relacionarse con habitantes y mostrar tarjetas hacia sus fichas.
+- Build de staging y producción incorpora contenido editorial.
+
+SUPABASE
+Migración aplicada:
+- 20260903173139 content_cms_phase1
+
+Tablas nuevas:
+- public.content_articles
+- public.content_redirects
+- public.content_audit_log
+
+Seguridad:
+- RLS habilitado.
+- Visitantes/usuarios solo pueden leer content_articles que estén publicados y cuya fecha de publicación ya haya llegado.
+- Redirecciones y auditoría no son accesibles directamente desde cliente.
+- Escrituras se realizan mediante service_role dentro de Edge Functions protegidas.
+
+EDGE FUNCTIONS DESPLEGADAS
+- winston-content-admin · verify_jwt=true
+- winston-content-public · verify_jwt=false
+  La función pública solo exporta campos públicos de artículos publicados y redirecciones activas.
+
+PUBLICACIÓN AUTOMÁTICA
+El CMS soporta un Deploy Hook mediante el secreto de entorno WINSTON_DEPLOY_HOOK_URL.
+Actualmente no se ha configurado ese secreto de Cloudflare, por lo que guardar/publicar contenido funciona en Supabase, pero para que un artículo nuevo aparezca automáticamente en el HTML público hay que conectar el Deploy Hook. No se ha inventado ni expuesto ninguna URL/secreto.
+
+CONTENIDO ACTUAL
+- 0 artículos publicados en el nuevo CMS.
+- Se generan correctamente las tres páginas índice aunque estén vacías.
+- Próxima fase editorial recomendada: recuperar y revisar los artículos educativos auténticos de la web antigua antes de publicarlos.
+
+VERIFICACIÓN FINAL
+- Suite completa: 73/73 pruebas superadas.
+- Build de producción: verificación interna 13/13 superada.
+- Sitemap: 93 URLs con 0 artículos (90 páginas anteriores + 3 índices editoriales).
+- Sintaxis JavaScript/ESM: correcta.
+- git diff --check: correcto.
+- Escaneo: sin secretos Stripe, webhook Stripe ni claves secretas Supabase incrustadas.
+- Supabase Security Advisor: ningún aviso nuevo provocado por el CMS.
+- Avisos previos que continúan: contact_messages con RLS sin política directa y leaked-password protection desactivada.
+- Índices editoriales aparecen como «unused» porque las tablas están recién creadas y vacías.
+
+NOTAS
+- El entorno de ejecución usado para construir la copia no tiene salida directa hacia el endpoint Supabase; por ello el build local conserva el snapshot editorial vacío si no puede sincronizar. El sistema de fallback evita romper el build.
+- En Cloudflare/GitHub, el build deberá tener conectividad con winston-content-public para regenerar contenido real.
+- La web que está online en el GitHub del usuario no se ha modificado desde este entorno; se entrega proyecto/patch para integración posterior.

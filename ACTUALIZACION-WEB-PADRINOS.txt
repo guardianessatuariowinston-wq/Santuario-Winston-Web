@@ -1,0 +1,33 @@
+SANTUARIO WINSTON · PADRINOS · FASE 1
+Fecha: 03/09/2026
+
+IMPLEMENTADO
+- Subsistema de Padrinos separado de los datos clínicos y operativos de la app.
+- 6 tablas nuevas en Supabase con RLS y denegación explícita a clientes directos.
+- Índices para claves foráneas y consultas previstas.
+- Edge Function independiente `winston-sponsors-admin`, con JWT obligatorio y roles technical/admin.
+- Panel Administración: nueva sección Padrinos en escritorio y móvil.
+- Resumen de padrinos, apadrinamientos activos, aportación mensual, incidencias y habitantes habilitados.
+- Alta manual de padrinos históricos o externos, sin crear una falsa suscripción Stripe.
+- Baja de apadrinamientos manuales conservando historial.
+- Configuración por habitante: habilitar/deshabilitar, mínimo, cantidades sugeridas, cantidad personalizada, contador y mensaje público.
+- Página pública Apadrina preparada para el nuevo flujo sin mostrar un checkout inexistente.
+- Pruebas nuevas específicas de Padrinos.
+
+SEGURIDAD
+- No se expone SUPABASE_SERVICE_ROLE_KEY en el navegador.
+- Las tablas de padrinos no tienen acceso directo desde anon/authenticated.
+- Todas las operaciones administrativas pasan por una Edge Function autenticada.
+- No se mezclan padrinos con `winston_sync_records`.
+- No se guardan ni simulan datos de tarjeta.
+
+AÚN NO ACTIVADO
+- Stripe Checkout.
+- Cobro recurrente automático.
+- Webhook de renovaciones/fallos/reembolsos.
+- Área privada del padrino.
+- Certificados automáticos.
+
+VALIDACIÓN
+- Build de staging correcto.
+- 59/59 pruebas superadas.

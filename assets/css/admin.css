@@ -141,3 +141,40 @@ button.list-card:hover { border-color: rgba(167,95,69,.45); transform: translate
   .kv-grid { grid-template-columns: 1fr; gap: 3px; }
   .kv-grid dd { margin-bottom: 9px; }
 }
+
+/* Padrinos */
+.sponsor-admin-grid { display: grid; grid-template-columns: minmax(0,.9fr) minmax(0,1.1fr); gap: 18px; margin-bottom: 18px; }
+.sponsor-admin-panel { min-width: 0; }
+.sponsor-admin-panel > .admin-help { margin: -7px 0 18px; color: var(--muted); line-height: 1.55; font-size: .84rem; }
+.sponsor-list-panel { margin-top: 18px; }
+.admin-form-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.admin-form-grid label { display: grid; gap: 7px; color: var(--forest); font-size: .78rem; font-weight: 750; }
+.admin-form-grid input, .admin-form-grid select, .admin-form-grid textarea { width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; background: white; color: var(--forest); outline: none; }
+.admin-form-grid textarea { resize: vertical; line-height: 1.5; }
+.admin-form-grid input:focus, .admin-form-grid select:focus, .admin-form-grid textarea:focus { border-color: var(--clay); box-shadow: 0 0 0 3px rgba(167,95,69,.12); }
+.admin-form-grid small { color: var(--muted); font-weight: 500; }
+.admin-form-wide { grid-column: 1 / -1; }
+.admin-check { grid-template-columns: auto 1fr !important; align-items: center; justify-content: start; }
+.admin-check input { width: 18px; height: 18px; margin: 0; }
+.admin-form-actions { display: flex; align-items: center; justify-content: flex-start; }
+.admin-form-actions .primary-button { margin-top: 0; }
+.sponsor-resident-list { display: grid; gap: 9px; max-height: 560px; overflow: auto; padding-right: 3px; }
+.sponsor-resident-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 15px; }
+.sponsor-resident-row h3 { font-size: 1.05rem; }
+.sponsor-card .contact-actions button { background: var(--danger); }
+
+@media (max-width: 980px) {
+  .sponsor-admin-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .admin-form-grid { grid-template-columns: 1fr; }
+  .admin-form-wide { grid-column: auto; }
+  .sponsor-resident-row { align-items: flex-start; flex-direction: column; }
+}
+
+/* Padrinos · estado de pagos */
+.admin-notice { margin: 0 0 18px; padding: 14px 16px; border-radius: 12px; border: 1px solid rgba(181,129,39,.28); background: rgba(255,246,219,.86); color: #604b18; line-height: 1.5; }
+
+/* CMS editorial */
+.content-publish-state{margin:0 0 1rem}.content-editor-form textarea{width:100%;resize:vertical}.admin-field-label{display:block;font-weight:700;margin-bottom:.45rem}.markdown-toolbar{display:flex;flex-wrap:wrap;gap:.4rem;margin:0 0 .5rem}.markdown-toolbar button{border:1px solid #c9c3b7;background:#fff;border-radius:.55rem;padding:.45rem .7rem;cursor:pointer}.markdown-toolbar button:hover{background:#f4f1ea}.content-article-card .contact-actions{margin-top:.8rem}.content-editor-form select[multiple]{min-height:9rem}

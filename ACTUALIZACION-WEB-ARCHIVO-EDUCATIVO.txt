@@ -1,0 +1,35 @@
+SANTUARIO WINSTON · RECUPERACIÓN INICIAL DEL ARCHIVO EDUCATIVO
+Fecha: 3 de septiembre de 2026
+
+OBJETIVO
+Recuperar los primeros artículos educativos auténticos de la antigua web de WordPress sin publicarlos automáticamente y conservando la procedencia histórica.
+
+CAMBIOS
+- El CMS guarda ahora URL original, fecha original, autor original y nota interna de revisión.
+- El panel Administración > Contenido permite consultar y editar esos cuatro datos.
+- Se han cargado en Supabase como BORRADOR seis artículos históricos:
+  1. Los caballos y la claustrofobia — 26/03/2022 — David Muriel.
+  2. El lugar donde vive tu caballo ¿es seguro? — 05/02/2022 — David Muriel.
+  3. Ya no monto a caballo — 11/12/2021 — David Muriel.
+  4. El caballo en invierno — 25/11/2021 — David Muriel.
+  5. Tocar y acariciar — 04/11/2021 — David Muriel.
+  6. Observa y acércate a los caballos para conocerlos — 17/10/2021 — David Muriel.
+- Los borradores contienen una síntesis editorial de recuperación y una nota de revisión; no sustituyen todavía el texto histórico original completo.
+- Ninguno se publica, indexa ni entra en el sitemap mientras conserve estado draft.
+
+PROCEDENCIA
+Archivo histórico: https://santuariowinston.wordpress.com/
+Cada borrador conserva además su URL individual original.
+
+SEGURIDAD Y VALIDACIÓN
+- Las funciones winston-content-admin y winston-content-public se actualizaron y desplegaron.
+- El campo interno review_note no se expone mediante la función pública.
+- 75/75 pruebas del repositorio superadas antes del commit.
+- Build de lanzamiento: 13/13 verificaciones superadas.
+- Los seis contenidos permanecen en estado draft en Supabase.
+- No se han publicado datos bancarios antiguos ni recomendaciones sanitarias antiguas como información vigente.
+
+PENDIENTE
+- Recuperar/contrastar el texto original completo cuando se disponga de una fuente propia o copia local adecuada.
+- Revisar cada artículo educativo con fuentes actuales antes de publicarlo como contenido vigente.
+- Configurar el Deploy Hook de Cloudflare cuando se quiera activar publicación automática desde el panel.

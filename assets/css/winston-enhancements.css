@@ -254,3 +254,30 @@
 
 .launch-404 { min-height: 58vh; display: grid; align-items: center; background: var(--cream); }
 .launch-404 .shell { max-width: 900px; }
+
+.sponsorship-system-note { margin: 0 0 clamp(28px,5vw,54px); border: 1px solid rgba(167,95,69,.22); border-radius: 18px; padding: 18px 20px; background: rgba(245,239,226,.72); color: #183029; }
+.sponsorship-system-note p { margin: 0; line-height: 1.65; }
+
+/* Padrinos · checkout seguro */
+.sponsorship-checkout-section { background: #f8f4eb; }
+.sponsorship-checkout-grid { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(280px,.75fr); gap: clamp(24px,4vw,48px); align-items: start; }
+.sponsorship-checkout-form { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; padding: clamp(20px,3vw,32px); border: 1px solid rgba(24,48,41,.12); border-radius: 22px; background: #fff; box-shadow: 0 18px 50px rgba(24,48,41,.07); }
+.sponsorship-checkout-form label { display: grid; gap: 7px; color: #183029; font-weight: 700; font-size: .92rem; }
+.sponsorship-checkout-form input,.sponsorship-checkout-form select { width: 100%; min-height: 46px; border: 1px solid rgba(24,48,41,.22); border-radius: 11px; padding: 10px 12px; background: #fff; color: #183029; font: inherit; }
+.sponsorship-checkout-form input:focus-visible,.sponsorship-checkout-form select:focus-visible { outline: 3px solid rgba(167,95,69,.22); outline-offset: 2px; border-color: #a75f45; }
+.sponsorship-checkout-form .sponsorship-check { grid-column: 1 / -1; display: flex; align-items: flex-start; gap: 10px; font-weight: 500; line-height: 1.5; }
+.sponsorship-checkout-form .sponsorship-check input { width: 18px; min-height: 18px; flex: 0 0 18px; margin-top: 3px; }
+.sponsorship-checkout-form > button { grid-column: 1 / -1; justify-self: start; }
+.sponsorship-checkout-form > button:disabled { opacity: .52; cursor: not-allowed; }
+.sponsorship-checkout-help { padding: clamp(20px,3vw,30px); border-radius: 22px; background: #183029; color: #fff; position: sticky; top: 110px; }
+.sponsorship-checkout-help h3 { margin-top: 0; color: #fff; }
+.sponsorship-checkout-help p { color: rgba(255,255,255,.86); line-height: 1.65; }
+.sponsorship-checkout-help [data-kind="error"] { color: #ffd4cc; }
+.sponsorship-checkout-help [data-kind="success"] { color: #d8f5df; }
+.sponsorship-checkout-help .button { margin-top: 10px; }
+@media (max-width: 800px) {
+  .sponsorship-checkout-grid { grid-template-columns: 1fr; }
+  .sponsorship-checkout-form { grid-template-columns: 1fr; }
+  .sponsorship-checkout-form .sponsorship-check,.sponsorship-checkout-form > button { grid-column: 1; }
+  .sponsorship-checkout-help { position: static; }
+}

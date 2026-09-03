@@ -12,6 +12,7 @@ const read = rel => fs.readFileSync(path.join(target, rel), 'utf8');
 const exists = rel => fs.existsSync(path.join(target, rel));
 const shaAt = (base, rel) => crypto.createHash('sha256').update(fs.readFileSync(path.join(base, rel))).digest('hex');
 const residents = JSON.parse(fs.readFileSync(path.join(repo, 'assets/data/habitantes.json'), 'utf8'));
+const articles = JSON.parse(fs.readFileSync(path.join(repo, 'assets/data/articles.json'), 'utf8'));
 const publicRoots = [
   'index.html','habitantes.html','guardianes.html','tienda.html','como-ayudar.html','hazte-socio.html','apadrina.html',
   'teaming.html','donar.html','adopciones-solidarias.html','en-busca-del-paraiso.html','voluntariado.html','testimonios.html',
@@ -40,11 +41,13 @@ function allFiles(base) {
 
 test('launch target exists', () => assert.ok(fs.existsSync(target), target));
 
-test('70 resident pages and 90 sitemap URLs are preserved', () => {
+test('resident pages and editorial sitemap URLs are preserved', () => {
   assert.equal(residents.length, 70);
   for (const row of residents) assert.ok(exists(`animales/${row.slug}/index.html`), row.slug);
   const sitemap = read('sitemap.xml');
-  assert.equal(count(/<loc>/g, sitemap), 90);
+  const editorialIndexes = 3;
+  const expectedUrls = publicRoots.length + residents.length + editorialIndexes + articles.length;
+  assert.equal(count(/<loc>/g, sitemap), expectedUrls);
   assert.ok(!sitemap.includes('administracion.html'));
   assert.ok(!sitemap.includes('404.html'));
 });
@@ -77,7 +80,7 @@ test('CSS heredado y fuentes rotas are removed from public HTML', () => {
   }
 });
 
-test('SEO metadata is complete on all 90 public pages', () => {
+test('SEO metadata is complete on all legacy public pages', () => {
   for (const rel of publicPages) {
     const html = read(rel);
     assert.equal(count(/<title>/gi, html), 1, `${rel} title`);
