@@ -39,3 +39,19 @@ Ese modo habilita indexación. No debe utilizarse en GitHub Pages mientras siga 
 La navegación se centraliza en `scripts/public-shell.mjs`. La Tienda Solidaria ya tiene fachada pública, pero la tienda comercial y los pagos se conectarán más adelante. Transparencia queda preparada para incorporar únicamente documentos públicos reales y confirmados. La promoción pública de la app sigue fuera de esta fase.
 
 La aplicación móvil y `capacitor-mobile` no forman parte de este repositorio público.
+
+## Preparación para lanzamiento
+
+La raíz del repositorio es el entorno de **staging** de GitHub Pages y debe permanecer `noindex,nofollow`.
+
+Para generar la salida de producción destinada a Cloudflare Pages:
+
+```bash
+node scripts/build-release.mjs
+```
+
+El comando crea `dist/`, aplica SEO, datos estructurados, rendimiento, accesibilidad, 404 y configuración Cloudflare, y ejecuta la validación de lanzamiento. `dist/` es un artefacto generado: no sustituye al staging ni realiza cambios DNS.
+
+Cloudflare Web Analytics está preparado pero desactivado por defecto. Solo se inyecta en un build de producción si se proporciona explícitamente `WINSTON_CF_WEB_ANALYTICS_TOKEN`.
+
+La secuencia de migración está documentada en `docs/launch/launch-checklist.md`.

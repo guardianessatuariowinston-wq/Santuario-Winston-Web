@@ -1,7 +1,3 @@
-.__font_geist_0tvmz3h { font-family: 'Geist', sans-serif; }
-
-.__variable_geist_0tvmz3h { --font-geist-sans: 'Geist', sans-serif; }
-
 
 :root {
   --ink: #183029;
@@ -19,7 +15,7 @@
   --line: rgba(24, 48, 41, 0.15);
   --shadow: 0 24px 70px rgba(27, 47, 40, 0.14);
   --display: "Iowan Old Style", "Baskerville", "Palatino Linotype", Georgia, serif;
-  --body: var(--font-geist-sans), "Helvetica Neue", Arial, sans-serif;
+  --body: "Helvetica Neue", Arial, sans-serif;
   --shell: min(1280px, calc(100vw - 64px));
 }
 

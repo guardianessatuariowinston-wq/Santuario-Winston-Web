@@ -238,3 +238,19 @@
   .transparency-hero h1{font-size:clamp(2.75rem,13.2vw,3.7rem)}.transparency-hero-media{min-height:300px}.transparency-hero-media img{min-height:300px}
   .transparency-empty-docs{border-radius:22px}.transparency-faq details{padding:.9rem 1rem}
 }
+
+/* Preparación para lanzamiento — accesibilidad, foco y movimiento reducido */
+:where(a, button, input, textarea, select, summary):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .home-hero { background: #102d25 url('../media/optimized/en-busca-del-paraiso.webp') center / cover no-repeat; }
+  .home-hero video { display: none; }
+}
+
+.launch-404 { min-height: 58vh; display: grid; align-items: center; background: var(--cream); }
+.launch-404 .shell { max-width: 900px; }

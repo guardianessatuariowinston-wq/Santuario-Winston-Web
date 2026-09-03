@@ -1,4 +1,11 @@
 (() => {
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const heroVideo = document.querySelector('.home-hero video[data-autoplay-hero]');
+  if (heroVideo instanceof HTMLVideoElement) {
+    if (reducedMotion) { heroVideo.pause(); heroVideo.removeAttribute('autoplay'); }
+    else heroVideo.play().catch(() => {});
+  }
+
   const drawer = document.querySelector('.mobile-drawer');
   const menuToggle = document.querySelector('.menu-toggle');
   const drawerBackdrop = document.querySelector('.drawer-backdrop');

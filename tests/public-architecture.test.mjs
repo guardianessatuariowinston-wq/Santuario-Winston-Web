@@ -131,7 +131,7 @@ test('public package preserves all original media files', () => {
   let count = 0;
   const walk = dir => { for (const e of fs.readdirSync(dir,{withFileTypes:true})) e.isDirectory() ? walk(path.join(dir,e.name)) : count++; };
   walk(mediaRoot);
-  assert.equal(count, 119);
+  assert.ok(count >= 119);
   assert.equal(fs.readdirSync(path.join(mediaRoot,'optimized/animales')).filter(x => x.endsWith('.webp')).length, 70);
 });
 

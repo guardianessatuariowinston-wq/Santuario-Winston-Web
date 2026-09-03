@@ -1,0 +1,17 @@
+SANTUARIO WINSTON — PREPARACIÓN PARA LANZAMIENTO
+03/09/2026
+
+Incluye:
+- separación staging/producción mediante scripts/build-release.mjs
+- staging GitHub Pages siempre noindex,nofollow
+- producción reproducible en dist/ para Cloudflare (dist está ignorado por Git)
+- SEO técnico y JSON-LD para 90 URLs públicas
+- 404 personalizada
+- _headers y _redirects para Cloudflare
+- vídeo hero optimizado de 18 segundos, sin audio
+- CSS base externalizado y eliminación de referencias _vinext_fonts rotas
+- mejoras de accesibilidad y prefers-reduced-motion
+- checklist de migración en docs/launch/launch-checklist.md
+- Cloudflare Web Analytics preparado pero desactivado
+
+NO realiza cambios DNS, no transfiere dominios, no cancela CloudAccess, no modifica Supabase, app Android ni el comportamiento de Administración.
