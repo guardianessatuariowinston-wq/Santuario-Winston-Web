@@ -1,0 +1,13 @@
+SANTUARIO WINSTON WEB — FASE A.1b
+
+Incluye:
+- Formulario de contacto funcional.
+- Envío seguro a Supabase Edge Function contact-winston.
+- Validación de campos, consentimiento, honeypot y control básico anti-spam.
+- Mensajes almacenados en la tabla privada contact_messages con RLS.
+
+Archivos web modificados:
+- contacto.html
+- assets/js/winston.js
+
+No incluye ni modifica la app móvil ni capacitor-mobile.

@@ -62,6 +62,60 @@
     applyFilters();
   }));
 
+
+  const CONTACT_ENDPOINT = 'https://fooymzhvkmpejiafuyvq.supabase.co/functions/v1/contact-winston';
+  const CONTACT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvb3ltemh2a21wZWppYWZ1eXZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTY4NzMsImV4cCI6MjEwMzkzMjg3M30.F34uxsv9xIrZQlDdqJczh5uF3ja1OvpnAE-Qfx0fzgQ';
+
+  async function submitContactForm(event) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!(form instanceof HTMLFormElement) || !form.reportValidity()) return;
+
+    const status = document.getElementById('contact-form-status');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const privacy = form.querySelector('input[name="privacyAccepted"]');
+    const data = new FormData(form);
+    const payload = {
+      name: data.get('name'),
+      email: data.get('email'),
+      phone: data.get('phone'),
+      topic: data.get('topic'),
+      message: data.get('message'),
+      website: data.get('website'),
+      privacyAccepted: privacy instanceof HTMLInputElement && privacy.checked,
+    };
+
+    form.setAttribute('aria-busy', 'true');
+    if (submitButton instanceof HTMLButtonElement) submitButton.disabled = true;
+    if (status) status.innerHTML = '<strong>Enviando…</strong> Estamos registrando tu mensaje de forma segura.';
+
+    try {
+      const response = await fetch(CONTACT_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': CONTACT_ANON_KEY,
+          'Authorization': `Bearer ${CONTACT_ANON_KEY}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || result.ok !== true) throw new Error(result.error || 'No se pudo enviar el mensaje.');
+
+      form.reset();
+      const reference = result.reference ? ` Referencia: ${result.reference}.` : '';
+      if (status) status.innerHTML = `<strong>Mensaje enviado.</strong> Gracias por contactar con el Santuario.${reference}`;
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : '';
+      if (status) status.innerHTML = `<strong>No hemos podido enviar el mensaje.</strong> ${detail || 'Inténtalo de nuevo en unos minutos o utiliza WhatsApp/correo.'}`;
+    } finally {
+      form.removeAttribute('aria-busy');
+      if (submitButton instanceof HTMLButtonElement) submitButton.disabled = false;
+    }
+  }
+
+  document.querySelector('.contact-form[data-contact-status="ready"]')?.addEventListener('submit', submitContactForm);
+
   document.querySelectorAll('.video-feature button').forEach((button) => button.addEventListener('click', () => {
     const video = button.closest('.video-feature')?.querySelector('video');
     if (!video) return;
