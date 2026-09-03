@@ -32,36 +32,7 @@
     buttons[1]?.addEventListener('click', () => track?.scrollBy({ left: track.clientWidth * 0.82, behavior: 'smooth' }));
   });
 
-  const input = document.querySelector('.search-field input');
-  const cards = [...document.querySelectorAll('.resident-card')];
-  const filterButtons = [...document.querySelectorAll('.filter-pills button')];
-  let period = 'Todos';
-  const applyFilters = () => {
-    const query = (input?.value || '').toLocaleLowerCase('es');
-    let visible = 0;
-    cards.forEach((card) => {
-      const text = card.textContent.toLocaleLowerCase('es');
-      const date = card.querySelector('.resident-date')?.textContent || '';
-      const year = Number((date.match(/20\d{2}/) || ['0'])[0]);
-      const inPeriod = period === 'Todos' ||
-        (period === '2011–2015' && year && year <= 2015) ||
-        (period === '2016–2019' && year >= 2016 && year <= 2019) ||
-        (period === '2020–hoy' && year >= 2020);
-      const show = inPeriod && (!query || text.includes(query));
-      card.hidden = !show;
-      if (show) visible += 1;
-    });
-    const count = document.querySelector('.result-count');
-    if (count) count.lastChild.textContent = ` ${visible} historias`;
-  };
-  input?.addEventListener('input', applyFilters);
-  filterButtons.forEach((button) => button.addEventListener('click', () => {
-    filterButtons.forEach((item) => item.classList.remove('active'));
-    button.classList.add('active');
-    period = button.textContent.trim();
-    applyFilters();
-  }));
-
+  // El directorio de Habitantes se gestiona en habitantes-directory.js.
 
   const CONTACT_ENDPOINT = 'https://fooymzhvkmpejiafuyvq.supabase.co/functions/v1/contact-winston';
   const CONTACT_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZvb3ltemh2a21wZWppYWZ1eXZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTY4NzMsImV4cCI6MjEwMzkzMjg3M30.F34uxsv9xIrZQlDdqJczh5uF3ja1OvpnAE-Qfx0fzgQ';

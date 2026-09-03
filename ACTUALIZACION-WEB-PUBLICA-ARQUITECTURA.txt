@@ -1,0 +1,31 @@
+SANTUARIO WINSTON WEB — ARQUITECTURA PÚBLICA ESCALABLE
+03/09/2026
+
+INCLUYE
+- Fuente central con las 70 historias públicas de Habitantes.
+- 70 páginas individuales estáticas en /animales/<slug>/.
+- SEO/canonical/Open Graph/JSON-LD por habitante.
+- Directorio de Habitantes enlazado a cada ficha.
+- Navegación reorganizada con Descubre > Habitantes / Los Guardianes / Nosotros.
+- Nueva página editorial guardianes.html.
+- Refuerzo de formas de colaboración en como-ayudar.html.
+- Nuevo bloque de descubrimiento Habitantes / Guardianes en Inicio.
+- Ajustes móviles acumulados de WhatsApp, titulares y cabecera.
+- Sitemap ampliado con las 70 fichas.
+- Protección NOINDEX del staging GitHub Pages.
+- Scripts reproducibles de generación y pruebas automáticas.
+
+NO INCLUYE
+- Tienda operativa, Printful/Gelato/Printify, pagos o productos ficticios.
+- Promoción pública de la app.
+- Cambios en Android o capacitor-mobile.
+- Cambios funcionales del panel administracion.html.
+
+DESPLIEGUE EN GITHUB PAGES
+1. Copiar todo el contenido del ZIP en Documentos/GitHub/Santuario-Winston-Web.
+2. Reemplazar archivos cuando Windows lo pregunte.
+3. Commit y Push origin desde GitHub Desktop.
+4. GitHub Pages seguirá en modo staging/noindex de forma intencionada.
+
+IMPORTANTE PARA EL DOMINIO FINAL
+Antes de migrar a santuariowinston.com hay que ejecutar el build en modo producción o retirar la protección de staging. No publicar el dominio definitivo con Disallow: / ni noindex.
