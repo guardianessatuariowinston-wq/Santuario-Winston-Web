@@ -99,4 +99,18 @@
     if (!video) return;
     if (video.paused) video.play(); else video.pause();
   }));
+
+  function loadWinstonChat() {
+    if (document.documentElement.getAttribute('data-winston-chat-loaded') === '1') return;
+    document.documentElement.setAttribute('data-winston-chat-loaded', '1');
+    const current = document.currentScript;
+    const base = current?.src ? new URL('.', current.src) : new URL('assets/js/', location.href);
+    const script = document.createElement('script');
+    script.src = new URL('winston-chat.js', base).href;
+    script.defer = true;
+    script.dataset.winstonChatLoader = '1';
+    document.head.append(script);
+  }
+
+  loadWinstonChat();
 })();

@@ -11,6 +11,7 @@ run('scripts/update-transparency-links.mjs');
 run('scripts/update-public-shell.mjs');
 run('scripts/build-habitantes.mjs');
 run('scripts/build-content.mjs');
+run('scripts/build-winston-knowledge.mjs');
 run('scripts/update-public-domain.mjs');
 run('scripts/normalize-public-html.mjs');
 run('scripts/apply-seo.mjs');

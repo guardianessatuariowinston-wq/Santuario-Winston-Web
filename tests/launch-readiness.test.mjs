@@ -205,10 +205,23 @@ test('administration protected files remain byte-identical', () => {
   }
 });
 
-test('media inventory preserves originals and adds the two approved Winston guide assets', () => {
+test('media inventory preserves originals and approved Winston guide/chat assets', () => {
   const media = allFiles(path.join(target, 'assets/media'));
-  assert.equal(media.length, 122);
+  assert.equal(media.length, 126);
   assert.equal(fs.readdirSync(path.join(target, 'assets/media/optimized/animales')).filter(x => x.endsWith('.webp')).length, 70);
   assert.ok(exists('assets/media/mascota/winston-aprende.webp'));
   assert.ok(exists('assets/media/mascota/winston-padrinos.webp'));
+});
+
+test('Winston interactive assets are deployable and contain no server secrets', () => {
+  assert.ok(exists('assets/js/winston-chat.js'));
+  assert.ok(exists('assets/data/winston-chat-knowledge.json'));
+  for (const name of ['idle','hello','thinking','answer']) {
+    assert.ok(exists(`assets/media/mascota/winston-chat-${name}.webp`), name);
+  }
+  const client = read('assets/js/winston-chat.js');
+  assert.match(client, /functions\/v1\/winston-chat/);
+  assert.match(client, /sessionStorage/);
+  assert.ok(!/OPENAI_API_KEY|SUPABASE_SERVICE_ROLE_KEY|sb_secret_/i.test(client));
+  assert.ok(!read('administracion.html').includes('winston-chat.js'));
 });

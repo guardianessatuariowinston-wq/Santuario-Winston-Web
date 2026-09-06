@@ -59,3 +59,14 @@ test('mascot guide has responsive and reduced-motion styles', () => {
   assert.match(css, /@media\s*\(max-width:\s*700px\)/);
   assert.match(css, /prefers-reduced-motion:\s*reduce/);
 });
+
+test('public shell keeps Padrinos as a top-level desktop and mobile destination', () => {
+  const shell = read('scripts/public-shell.mjs');
+  const updater = read('scripts/update-public-shell.mjs');
+  assert.ok(shell.includes("activeClass(active,'padrinos')"), 'desktop shell must expose a dedicated Padrinos active state');
+  assert.match(shell, /nav-item[^\n]*padrinos[\s\S]*?apadrina\.html[^\n]*>Padrinos</i);
+  assert.match(shell, /drawer-group[^\n]*apadrina\.html[^\n]*>Padrinos<\/a>/i);
+  assert.doesNotMatch(shell, /drawer-child[^\n]*apadrina\.html[^\n]*>Apadrina<\/a>/i);
+  assert.match(shell, /footer-main[\s\S]*?Hazte socio<\/a><a href="\$\{href\(prefix,'apadrina\.html'\)\}">Padrinos<\/a><a href="\$\{href\(prefix,'donar\.html'\)\}">Donativos/, 'footer must keep Padrinos visible in Participa');
+  assert.ok(updater.includes("if (name === 'apadrina.html') return 'padrinos';"), 'apadrina.html must activate the Padrinos top-level item');
+});

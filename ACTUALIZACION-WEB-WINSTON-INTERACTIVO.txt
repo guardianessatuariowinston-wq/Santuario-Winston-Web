@@ -1,0 +1,51 @@
+SANTUARIO WINSTON · WINSTON INTERACTIVO · OPCIÓN C
+Fecha: 06/09/2026
+
+IMPLEMENTADO EN LA WEB
+- Winston flotante en las páginas públicas, minimizable y adaptado a móvil/escritorio.
+- Estados visuales: reposo, saludo, pensando, respuesta y error.
+- Botones rápidos sin uso de IA: Habitantes, Padrinos, Aprende conmigo, Cómo ayudar, Voluntariado, Teaming y Contacto.
+- Caja de conversación libre con historial limitado a la sesión del navegador.
+- Máximo 500 caracteres por pregunta y 6 mensajes previos de contexto.
+- Enlaces internos seguros hacia contenido relacionado.
+- Administración queda fuera del widget.
+- Padrinos permanece visible como destino principal en navegación de escritorio/móvil y en el pie de página.
+
+IMPLEMENTADO EN BACKEND (CÓDIGO PREPARADO)
+- Edge Function: supabase/functions/winston-chat/index.ts
+- Migración: supabase/migrations/20260906_winston_chat_rate_limits.sql
+- Respuestas limitadas a Santuario Winston, animales y bienestar animal.
+- Datos concretos del Santuario se apoyan en conocimiento público generado por la web.
+- 70 habitantes + páginas públicas permitidas en el artefacto de conocimiento actual.
+- Los borradores del CMS no entran en el conocimiento público.
+- Preguntas veterinarias de riesgo: sin diagnóstico, medicamentos, dosis ni tratamientos; remite a valoración veterinaria.
+- Preguntas fuera de ámbito se rechazan de forma controlada.
+- Moderación de entrada y salida antes/después de la respuesta de IA.
+- OpenAI Responses API con store:false.
+- Modelo configurable; valor por defecto preparado: gpt-5.6-luna.
+- Rate limit inicial: 12 preguntas libres por 10 minutos por identificador anónimo hash.
+- El contador conserva una sola fila técnica por identificador; no guarda el texto de las conversaciones.
+- No hay claves secretas en HTML/JavaScript público.
+
+PRIVACIDAD
+- No existe tabla de transcripciones.
+- El navegador guarda solo el historial corto en sessionStorage y desaparece al finalizar la sesión.
+- Supabase guarda únicamente el hash técnico del límite, ventana temporal y contador.
+
+PARA ACTIVAR LAS PREGUNTAS LIBRES EN SUPABASE
+1. Aplicar la migración 20260906_winston_chat_rate_limits.sql.
+2. Desplegar la función winston-chat como función pública (Verify JWT desactivado).
+3. Crear secretos de Supabase, SIN ponerlos en GitHub ni en el navegador:
+   WINSTON_CHAT_KNOWLEDGE_URL=https://guardianessantuariowinston-wq.github.io/Santuario-Winston-Web/assets/data/winston-chat-knowledge.json
+   WINSTON_CHAT_RATE_SALT=<valor aleatorio privado>
+   OPENAI_MODEL=gpt-5.6-luna
+   OPENAI_API_KEY   (crear como secreto de Supabase; no escribir su valor en este archivo)
+4. Cuando santuariowinston.org sea producción, cambiar WINSTON_CHAT_KNOWLEDGE_URL a:
+   https://santuariowinston.org/assets/data/winston-chat-knowledge.json
+
+IMPORTANTE
+- OPENAI_API_KEY y WINSTON_CHAT_RATE_SALT se introducen directamente como secretos en Supabase. No deben enviarse por chat ni subirse al repositorio.
+- Sin OPENAI_API_KEY, los botones rápidos siguen funcionando y la función devuelve un aviso seguro para las preguntas libres.
+- La app Android no se modifica.
+- Stripe real no se activa ni modifica.
+- Los seis artículos históricos continúan como borradores.

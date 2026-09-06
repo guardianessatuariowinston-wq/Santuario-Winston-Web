@@ -55,3 +55,16 @@ El comando crea `dist/`, aplica SEO, datos estructurados, rendimiento, accesibil
 Cloudflare Web Analytics está preparado pero desactivado por defecto. Solo se inyecta en un build de producción si se proporciona explícitamente `WINSTON_CF_WEB_ANALYTICS_TOKEN`.
 
 La secuencia de migración está documentada en `docs/launch/launch-checklist.md`.
+
+## Winston interactivo · variables de servidor
+
+El chat libre de Winston se ejecuta en la Edge Function `winston-chat`. Estas variables se configuran como secretos/variables del entorno de Supabase; **nunca** se incluyen valores en HTML, JavaScript público ni en el repositorio.
+
+```text
+OPENAI_API_KEY                 # Supabase secret, nunca client-side
+OPENAI_MODEL                   # opcional; por defecto gpt-5.6-luna
+WINSTON_CHAT_KNOWLEDGE_URL     # JSON público generado por el build
+WINSTON_CHAT_RATE_SALT         # secreto aleatorio para hash anónimo del rate limit
+```
+
+La llamada de generación usa OpenAI Responses con `store:false`. La moderación de entrada y salida se hace mediante la API de Moderations por separado. No existe una tabla de transcripciones del chat.
