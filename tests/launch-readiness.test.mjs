@@ -205,8 +205,10 @@ test('administration protected files remain byte-identical', () => {
   }
 });
 
-test('media inventory preserves 119 originals plus one optimized hero video', () => {
+test('media inventory preserves originals and adds the two approved Winston guide assets', () => {
   const media = allFiles(path.join(target, 'assets/media'));
-  assert.equal(media.length, 120);
+  assert.equal(media.length, 122);
   assert.equal(fs.readdirSync(path.join(target, 'assets/media/optimized/animales')).filter(x => x.endsWith('.webp')).length, 70);
+  assert.ok(exists('assets/media/mascota/winston-aprende.webp'));
+  assert.ok(exists('assets/media/mascota/winston-padrinos.webp'));
 });
